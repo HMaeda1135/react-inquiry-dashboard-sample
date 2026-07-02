@@ -1,17 +1,18 @@
 import { useEffect, useState, type MouseEvent } from 'react';
-import type { Inquiry, InquiryStatus } from '../types/inquiry';
-import { INQUIRY_STATUSES } from '../types/inquiry';
+import type { Inquiry, InquiryPriority, InquiryStatus } from '../types/inquiry';
+import { INQUIRY_PRIORITIES, INQUIRY_STATUSES } from '../types/inquiry';
 import { formatDate, priorityClass, statusClass } from '../utils/inquiryDisplay';
 import { Select } from './Select';
 
 type InquiryModalProps = {
   inquiry: Inquiry;
   onClose: () => void;
-  onSave: (id: number, status: InquiryStatus, memo: string) => void;
+  onSave: (id: number, status: InquiryStatus, priority: InquiryPriority, memo: string) => void;
 };
 
 export function InquiryModal({ inquiry, onClose, onSave }: InquiryModalProps) {
   const [status, setStatus] = useState<InquiryStatus>(inquiry.status);
+  const [priority, setPriority] = useState<InquiryPriority>(inquiry.priority);
   const [memo, setMemo] = useState(inquiry.memo);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export function InquiryModal({ inquiry, onClose, onSave }: InquiryModalProps) {
   };
 
   const handleSave = () => {
-    onSave(inquiry.id, status, memo);
+    onSave(inquiry.id, status, priority, memo);
     onClose();
   };
 
@@ -94,12 +95,6 @@ export function InquiryModal({ inquiry, onClose, onSave }: InquiryModalProps) {
               </dd>
             </div>
             <div className="modal__detail-row">
-              <dt>優先度</dt>
-              <dd>
-                <span className={priorityClass(inquiry.priority)}>{inquiry.priority}</span>
-              </dd>
-            </div>
-            <div className="modal__detail-row">
               <dt>受付日</dt>
               <dd>{formatDate(inquiry.receivedAt)}</dd>
             </div>
@@ -119,6 +114,20 @@ export function InquiryModal({ inquiry, onClose, onSave }: InquiryModalProps) {
               onChange={(value) => setStatus(value)}
               footer={
                 <span className={`modal__status-preview ${statusClass(status)}`}>{status}</span>
+              }
+            />
+
+            <Select<InquiryPriority>
+              id="modal-priority"
+              label="優先度"
+              className="modal__field"
+              value={priority}
+              options={INQUIRY_PRIORITIES.map((p) => ({ value: p, label: p }))}
+              onChange={(value) => setPriority(value)}
+              footer={
+                <span className={`modal__status-preview ${priorityClass(priority)}`}>
+                  {priority}
+                </span>
               }
             />
 

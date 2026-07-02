@@ -89,10 +89,10 @@ function App() {
   }, []);
 
   const handleSaveInquiry = useCallback(
-    (id: number, status: InquiryStatus, memo: string) => {
+    (id: number, status: InquiryStatus, priority: InquiryPriority, memo: string) => {
       setInquiries((prev) => {
         const updated = prev.map((inquiry) =>
-          inquiry.id === id ? { ...inquiry, status, memo } : inquiry,
+          inquiry.id === id ? { ...inquiry, status, priority, memo } : inquiry,
         );
         saveInquiries(updated);
         return updated;
