@@ -2,7 +2,7 @@ import type { InquiryCategory, InquiryPriority, InquiryStatus } from '../types/i
 import { INQUIRY_CATEGORIES, INQUIRY_PRIORITIES, INQUIRY_STATUSES } from '../types/inquiry';
 import { Select } from './Select';
 
-type FilterPanelProps = {
+type InquiryFiltersProps = {
   keyword: string;
   statusFilter: InquiryStatus | 'すべて';
   categoryFilter: InquiryCategory | 'すべて';
@@ -21,7 +21,7 @@ function withAllOption<T extends string>(items: readonly T[]) {
   ];
 }
 
-export function FilterPanel({
+export function InquiryFilters({
   keyword,
   statusFilter,
   categoryFilter,
@@ -31,25 +31,30 @@ export function FilterPanel({
   onCategoryChange,
   onPriorityChange,
   onResetData,
-}: FilterPanelProps) {
+}: InquiryFiltersProps) {
   return (
-    <section className="filter" aria-label="検索・絞り込み">
-      <div className="filter__field filter__field--search">
+    <section className="filters" aria-label="検索・フィルター">
+      <div className="filters__header">
+        <h2 className="filters__title">検索・フィルター</h2>
+        <p className="filters__hint">氏名、会社名、件名、本文を対象に絞り込みできます</p>
+      </div>
+
+      <div className="filters__field filters__field--search">
         <label htmlFor="search-keyword">キーワード検索</label>
         <input
           id="search-keyword"
           type="search"
-          placeholder="タイトル・顧客名・概要で検索"
+          placeholder="氏名・会社名・件名・本文で検索"
           value={keyword}
           onChange={(e) => onKeywordChange(e.target.value)}
         />
       </div>
 
-      <div className="filter__row">
+      <div className="filters__row">
         <Select
           id="filter-status"
           label="ステータス"
-          className="filter__field"
+          className="filters__field"
           value={statusFilter}
           options={withAllOption(INQUIRY_STATUSES)}
           onChange={onStatusChange}
@@ -58,7 +63,7 @@ export function FilterPanel({
         <Select
           id="filter-category"
           label="カテゴリ"
-          className="filter__field"
+          className="filters__field"
           value={categoryFilter}
           options={withAllOption(INQUIRY_CATEGORIES)}
           onChange={onCategoryChange}
@@ -67,14 +72,14 @@ export function FilterPanel({
         <Select
           id="filter-priority"
           label="優先度"
-          className="filter__field"
+          className="filters__field"
           value={priorityFilter}
           options={withAllOption(INQUIRY_PRIORITIES)}
           onChange={onPriorityChange}
         />
       </div>
 
-      <div className="filter__actions">
+      <div className="filters__actions">
         <button type="button" className="btn btn--subtle" onClick={onResetData}>
           サンプルデータに戻す
         </button>

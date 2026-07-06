@@ -1,7 +1,7 @@
 import { initialInquiries } from '../data/inquiries';
 import type { Inquiry } from '../types/inquiry';
 
-const STORAGE_KEY = 'inquiry-dashboard-data';
+const STORAGE_KEY = 'inquiry-dashboard-v2';
 
 export function loadInquiries(): Inquiry[] {
   try {

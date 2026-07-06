@@ -1,47 +1,54 @@
 import type { Inquiry } from '../types/inquiry';
-import { formatDate, priorityClass, statusClass } from '../utils/inquiryDisplay';
+import { formatDate } from '../utils/inquiryDisplay';
+import { PriorityBadge } from './PriorityBadge';
+import { StatusBadge } from './StatusBadge';
 
 type InquiryCardProps = {
   inquiry: Inquiry;
-  onOpenDetail: (inquiry: Inquiry) => void;
+  isSelected: boolean;
+  onSelect: (inquiry: Inquiry) => void;
 };
 
-export function InquiryCard({ inquiry, onOpenDetail }: InquiryCardProps) {
+export function InquiryCard({ inquiry, isSelected, onSelect }: InquiryCardProps) {
   return (
-    <article className="inquiry-card">
-      <div className="inquiry-card__header">
-        <h3 className="inquiry-card__title">{inquiry.title}</h3>
-        <div className="inquiry-card__badges">
-          <span className={statusClass(inquiry.status)}>{inquiry.status}</span>
-          <span className={priorityClass(inquiry.priority)}>優先度: {inquiry.priority}</span>
-        </div>
-      </div>
-
-      <dl className="inquiry-card__meta">
-        <div className="inquiry-card__meta-row">
-          <dt>顧客名</dt>
-          <dd>{inquiry.clientName}</dd>
-        </div>
-        <div className="inquiry-card__meta-row">
-          <dt>カテゴリ</dt>
-          <dd>
-            <span className="badge badge--category">{inquiry.category}</span>
-          </dd>
-        </div>
-        <div className="inquiry-card__meta-row">
-          <dt>受付日</dt>
-          <dd>{formatDate(inquiry.receivedAt)}</dd>
-        </div>
-      </dl>
-
-      <p className="inquiry-card__summary">{inquiry.summary}</p>
-
+    <article
+      className={`inquiry-card${isSelected ? ' inquiry-card--selected' : ''}`}
+    >
       <button
         type="button"
-        className="btn btn--primary btn--sm"
-        onClick={() => onOpenDetail(inquiry)}
+        className="inquiry-card__button"
+        onClick={() => onSelect(inquiry)}
+        aria-pressed={isSelected}
       >
-        詳細を見る
+        <div className="inquiry-card__header">
+          <span className="inquiry-card__id">#{String(inquiry.id).padStart(4, '0')}</span>
+          <div className="inquiry-card__badges">
+            <StatusBadge status={inquiry.status} />
+            <PriorityBadge priority={inquiry.priority} />
+          </div>
+        </div>
+        <h3 className="inquiry-card__subject">{inquiry.subject}</h3>
+        <dl className="inquiry-card__meta">
+          <div>
+            <dt>相談者</dt>
+            <dd>{inquiry.contactName}</dd>
+          </div>
+          <div>
+            <dt>会社 / 種別</dt>
+            <dd>{inquiry.companyOrType}</dd>
+          </div>
+          <div>
+            <dt>カテゴリ</dt>
+            <dd>
+              <span className="category-badge">{inquiry.category}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>受信日</dt>
+            <dd>{formatDate(inquiry.receivedAt)}</dd>
+          </div>
+        </dl>
+        <p className="inquiry-card__body">{inquiry.body}</p>
       </button>
     </article>
   );

@@ -1,24 +1,32 @@
-export type InquiryStatus = '未対応' | '対応中' | '完了';
-export type InquiryPriority = '低' | '中' | '高';
-export type InquiryCategory = '新規制作' | '修正・改善' | '機能追加' | 'フロントエンド実装';
+export type InquiryStatus = '未対応' | '対応中' | '確認待ち' | '完了';
+export type InquiryPriority = '高' | '中' | '低';
+export type InquiryCategory =
+  | 'LP制作'
+  | 'WordPress修正'
+  | 'React画面実装'
+  | '既存サイト改善'
+  | 'その他';
 
 export type Inquiry = {
   id: number;
-  title: string;
-  clientName: string;
+  contactName: string;
+  companyOrType: string;
+  subject: string;
   category: InquiryCategory;
   status: InquiryStatus;
   priority: InquiryPriority;
   receivedAt: string;
-  summary: string;
+  body: string;
   memo: string;
+  nextAction: string;
 };
 
-export const INQUIRY_STATUSES: InquiryStatus[] = ['未対応', '対応中', '完了'];
-export const INQUIRY_PRIORITIES: InquiryPriority[] = ['低', '中', '高'];
+export const INQUIRY_STATUSES: InquiryStatus[] = ['未対応', '対応中', '確認待ち', '完了'];
+export const INQUIRY_PRIORITIES: InquiryPriority[] = ['高', '中', '低'];
 export const INQUIRY_CATEGORIES: InquiryCategory[] = [
-  '新規制作',
-  '修正・改善',
-  '機能追加',
-  'フロントエンド実装',
+  'LP制作',
+  'WordPress修正',
+  'React画面実装',
+  '既存サイト改善',
+  'その他',
 ];

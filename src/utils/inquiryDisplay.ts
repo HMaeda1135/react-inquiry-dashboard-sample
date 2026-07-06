@@ -1,4 +1,4 @@
-import type { Inquiry } from '../types/inquiry';
+import type { Inquiry, InquiryPriority, InquiryStatus } from '../types/inquiry';
 
 export function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -9,24 +9,40 @@ export function formatDate(dateStr: string): string {
   });
 }
 
-export function statusClass(status: Inquiry['status']): string {
+export function statusVariant(status: InquiryStatus): string {
   switch (status) {
     case '未対応':
-      return 'badge badge--pending';
+      return 'pending';
     case '対応中':
-      return 'badge badge--progress';
+      return 'progress';
+    case '確認待ち':
+      return 'waiting';
     case '完了':
-      return 'badge badge--completed';
+      return 'completed';
   }
 }
 
-export function priorityClass(priority: Inquiry['priority']): string {
+export function priorityVariant(priority: InquiryPriority): string {
   switch (priority) {
     case '高':
-      return 'badge badge--priority-high';
+      return 'high';
     case '中':
-      return 'badge badge--priority-medium';
+      return 'medium';
     case '低':
-      return 'badge badge--priority-low';
+      return 'low';
   }
+}
+
+export function isReceivedThisWeek(receivedAt: string, referenceDate = new Date()): boolean {
+  const received = new Date(receivedAt);
+  const start = new Date(referenceDate);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - 6);
+  const end = new Date(referenceDate);
+  end.setHours(23, 59, 59, 999);
+  return received >= start && received <= end;
+}
+
+export function countByStatus(inquiries: Inquiry[], status: InquiryStatus): number {
+  return inquiries.filter((inquiry) => inquiry.status === status).length;
 }

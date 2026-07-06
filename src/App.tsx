@@ -1,10 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Inquiry, InquiryCategory, InquiryPriority, InquiryStatus } from './types/inquiry';
-import { Header } from './components/Header';
+import type { ActiveTab } from './types/navigation';
+import { AppHeader } from './components/AppHeader';
+import { Sidebar } from './components/Sidebar';
 import { SummaryCards } from './components/SummaryCards';
-import { FilterPanel } from './components/FilterPanel';
+import { OverviewPanel } from './components/OverviewPanel';
+import { InquiryFilters } from './components/InquiryFilters';
 import { InquiryList } from './components/InquiryList';
-import { InquiryModal } from './components/InquiryModal';
+import { InquiryDetail, InquiryDetailPlaceholder } from './components/InquiryDetail';
 import { Footer } from './components/Footer';
 import { loadInquiries, resetInquiries, saveInquiries } from './utils/storage';
 import './App.css';
@@ -12,13 +15,19 @@ import './App.css';
 const ITEMS_PER_PAGE = 10;
 
 function App() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [inquiries, setInquiries] = useState<Inquiry[]>(() => loadInquiries());
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<InquiryStatus | 'すべて'>('すべて');
   const [categoryFilter, setCategoryFilter] = useState<InquiryCategory | 'すべて'>('すべて');
   const [priorityFilter, setPriorityFilter] = useState<InquiryPriority | 'すべて'>('すべて');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const selectedInquiry = useMemo(
+    () => inquiries.find((inquiry) => inquiry.id === selectedId) ?? null,
+    [inquiries, selectedId],
+  );
 
   const filteredInquiries = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase();
@@ -26,9 +35,10 @@ function App() {
     return inquiries.filter((inquiry) => {
       const matchesKeyword =
         normalizedKeyword === '' ||
-        inquiry.title.toLowerCase().includes(normalizedKeyword) ||
-        inquiry.clientName.toLowerCase().includes(normalizedKeyword) ||
-        inquiry.summary.toLowerCase().includes(normalizedKeyword);
+        inquiry.contactName.toLowerCase().includes(normalizedKeyword) ||
+        inquiry.companyOrType.toLowerCase().includes(normalizedKeyword) ||
+        inquiry.subject.toLowerCase().includes(normalizedKeyword) ||
+        inquiry.body.toLowerCase().includes(normalizedKeyword);
 
       const matchesStatus =
         statusFilter === 'すべて' || inquiry.status === statusFilter;
@@ -80,12 +90,8 @@ function App() {
     setCurrentPage(1);
   }, []);
 
-  const handleOpenDetail = useCallback((inquiry: Inquiry) => {
-    setSelectedInquiry(inquiry);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setSelectedInquiry(null);
+  const handleSelectInquiry = useCallback((inquiry: Inquiry) => {
+    setSelectedId(inquiry.id);
   }, []);
 
   const handleSaveInquiry = useCallback(
@@ -109,57 +115,91 @@ function App() {
     setCategoryFilter('すべて');
     setPriorityFilter('すべて');
     setCurrentPage(1);
-    setSelectedInquiry(null);
+    setSelectedId(null);
+  }, []);
+
+  const handleGoToInquiries = useCallback(() => {
+    setActiveTab('inquiries');
   }, []);
 
   return (
     <div className="app">
-      <Header />
+      <AppHeader />
 
-      <main className="main">
-        <div className="notice" role="note">
-          <p>
-            この画面はポートフォリオ掲載用の架空ダッシュボードサンプルです。
-            実在する顧客情報は含まれていません。
-          </p>
+      <div className="app-body">
+        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+
+        <div className="app-content">
+          <div className="notice" role="note">
+            <p>
+              この画面はポートフォリオ掲載用の架空ダッシュボードサンプルです。
+              実在する顧客情報は含まれておらず、実際の送信・保存処理は行いません。
+            </p>
+          </div>
+
+          {activeTab === 'overview' && (
+            <div
+              id="panel-overview"
+              role="tabpanel"
+              aria-labelledby="tab-overview"
+              className="tab-panel"
+            >
+              <SummaryCards inquiries={inquiries} />
+              <OverviewPanel inquiries={inquiries} onGoToInquiries={handleGoToInquiries} />
+            </div>
+          )}
+
+          {activeTab === 'inquiries' && (
+            <div
+              id="panel-inquiries"
+              role="tabpanel"
+              aria-labelledby="tab-inquiries"
+              className="tab-panel"
+            >
+              <InquiryFilters
+                keyword={keyword}
+                statusFilter={statusFilter}
+                categoryFilter={categoryFilter}
+                priorityFilter={priorityFilter}
+                onKeywordChange={handleKeywordChange}
+                onStatusChange={handleStatusChange}
+                onCategoryChange={handleCategoryChange}
+                onPriorityChange={handlePriorityChange}
+                onResetData={handleResetData}
+              />
+
+              <div className="workspace workspace--split">
+                <InquiryList
+                  inquiries={paginatedInquiries}
+                  totalItems={filteredInquiries.length}
+                  selectedId={selectedId}
+                  currentPage={effectivePage}
+                  totalPages={totalPages}
+                  rangeStart={rangeStart}
+                  rangeEnd={rangeEnd}
+                  onPageChange={setCurrentPage}
+                  onSelect={handleSelectInquiry}
+                />
+
+                <div className="detail-panel-slot">
+                  {selectedInquiry ? (
+                    <InquiryDetail
+                      key={selectedInquiry.id}
+                      inquiry={selectedInquiry}
+                      mode="panel"
+                      onSave={handleSaveInquiry}
+                    />
+                  ) : (
+                    <InquiryDetailPlaceholder />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-
-        <SummaryCards inquiries={inquiries} />
-
-        <FilterPanel
-          keyword={keyword}
-          statusFilter={statusFilter}
-          categoryFilter={categoryFilter}
-          priorityFilter={priorityFilter}
-          onKeywordChange={handleKeywordChange}
-          onStatusChange={handleStatusChange}
-          onCategoryChange={handleCategoryChange}
-          onPriorityChange={handlePriorityChange}
-          onResetData={handleResetData}
-        />
-
-        <InquiryList
-          inquiries={paginatedInquiries}
-          totalItems={filteredInquiries.length}
-          currentPage={effectivePage}
-          totalPages={totalPages}
-          rangeStart={rangeStart}
-          rangeEnd={rangeEnd}
-          onPageChange={setCurrentPage}
-          onOpenDetail={handleOpenDetail}
-        />
-      </main>
+      </div>
 
       <Footer />
-
-      {selectedInquiry && (
-        <InquiryModal
-          key={selectedInquiry.id}
-          inquiry={selectedInquiry}
-          onClose={handleCloseModal}
-          onSave={handleSaveInquiry}
-        />
-      )}
     </div>
   );
 }
