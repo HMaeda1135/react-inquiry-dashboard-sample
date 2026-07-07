@@ -9,6 +9,7 @@ import { InquiryFilters } from './components/InquiryFilters';
 import { InquiryList } from './components/InquiryList';
 import { InquiryDetail, InquiryDetailPlaceholder } from './components/InquiryDetail';
 import { Footer } from './components/Footer';
+import { Toast } from './components/Toast';
 import { loadInquiries, resetInquiries, saveInquiries } from './utils/storage';
 import './App.css';
 
@@ -23,6 +24,8 @@ function App() {
   const [priorityFilter, setPriorityFilter] = useState<InquiryPriority | 'すべて'>('すべて');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastKey, setToastKey] = useState(0);
 
   const selectedInquiry = useMemo(
     () => inquiries.find((inquiry) => inquiry.id === selectedId) ?? null,
@@ -94,6 +97,10 @@ function App() {
     setSelectedId(inquiry.id);
   }, []);
 
+  const handleToastClose = useCallback(() => {
+    setToastVisible(false);
+  }, []);
+
   const handleSaveInquiry = useCallback(
     (id: number, status: InquiryStatus, priority: InquiryPriority, memo: string) => {
       setInquiries((prev) => {
@@ -103,6 +110,8 @@ function App() {
         saveInquiries(updated);
         return updated;
       });
+      setToastKey((key) => key + 1);
+      setToastVisible(true);
     },
     [],
   );
@@ -200,6 +209,13 @@ function App() {
       </div>
 
       <Footer />
+
+      <Toast
+        key={toastKey}
+        message="保存しました"
+        visible={toastVisible}
+        onClose={handleToastClose}
+      />
     </div>
   );
 }
